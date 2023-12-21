@@ -1,0 +1,90 @@
+﻿@model StepperViewModel
+@{
+    var first = Model.Inspections.FirstOrDefault();
+    var id = "stepper" + first.InspectionId.ToString();
+    var address = first.AddressLine;
+    int count = 0;
+    bool current = false;
+}
+
+<div class="meet">
+    <h4>MEET YOUR INSPECTOR</h4>
+    <div class="row">
+        <div class="col-2">
+            <img src="@Model.Inspector.PhotoUrl" height="70" />
+        </div>
+        <div class="col-5">
+            @Model.Inspector.FirstName @Model.Inspector.LastName<br />
+            @Model.Inspector.PhoneNo
+        </div>
+        <div class="col-5 div-i">
+            <div class="float-start pe-4 fs-1 fw-bolder text-white">@Model.Inspections_Left</div>
+            <div class="pt-2">INSPECTIONS BEFORE YOU</div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <p class="text-center fs-6">
+        @Model.Inspector.FirstName has a total of @Model.Inspections.Count().ToString() inspections today.<br />
+        <span class="fst-italic">Last update: @DateTime.Now.ToString("MMM d, h:mm tt")</span>
+    </p>
+</div>
+
+@(Html.Kendo().Stepper()
+    .Name(id)
+    .Orientation(StepperOrientationType.Vertical)
+    .Steps(s =>
+    {
+        int count = 0;
+        bool current = false;
+        foreach (IxHeader i in Model.Inspections)
+        {
+            if (i.IsDone)
+            {
+                count++;
+            }
+            else
+            {
+                var step = s.Add().Selected(false);
+                if (!current)
+                {
+                    step.Label(count.ToString() + " inspections completed").Icon("grid");
+                    step = s.Add().Label(Model.Inspector.FirstName + " is currently at this site").Icon("check").Selected(true);
+                    current = true;
+                    count++;
+                }
+                if (i.AddressLine == ViewBag.Address)
+                {
+                    step.Label("Your inspection").Icon("home");
+                    break;
+                }
+            }
+        }
+    })
+)
+
+<style>
+    .meet {
+        padding: 10px 10px;
+        background-color: #14abe1;
+        color: white;
+    }
+
+    .k-step-label, .k-step-text {
+        max-width: 100% !important;
+        width: 300px !important;
+    }
+
+    .div-i {
+        border-left: 1px solid white;
+        padding-left: 40px;
+    }
+
+    .div-count {
+        float: left;
+        font-size: 3rem;
+        font-weight: bolder;
+        color: white;
+        padding-right: 20px;
+    }
+</style>

@@ -1,0 +1,14 @@
+﻿@using System.Security.Principal
+
+<ul class="navbar-nav">
+@if (User.Identity?.IsAuthenticated == true)
+{
+    @await Component.InvokeAsync("Inspector", new { user = User.Identity?.Name })
+}
+else
+{
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">Sign in</a>
+        </li>
+}
+</ul>

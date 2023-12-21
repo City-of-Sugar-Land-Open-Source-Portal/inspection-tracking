@@ -1,0 +1,26 @@
+﻿@{
+    ViewBag.Title = "Inspectors";
+}
+
+<form class="row row-cols-lg-auto g-3 mb-3" asp-action="List" method="get">
+    <div class="col-12">
+        @(Html.Kendo().DropDownList()
+            .Name("user")
+            .DataTextField("LastName")
+            .DataValueField("UserId")
+            .DataSource(source =>
+            {
+                source.Read(read => read.Action("GetInspectors", "EG"));
+            })
+            )
+    </div>
+    <div class="col-12">
+        @(Html.Kendo().DatePicker()
+            .Name("date")
+            .Value(DateTime.Today)
+            )
+    </div>
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">GET</button>
+    </div>
+</form>

@@ -1,0 +1,52 @@
+﻿@{
+    Layout = "_TrackLayout";
+}
+
+<div class="mt-3 main">
+    <div class="logo mb-3">
+        <img src="~/cityofsugarland.png" alt="logo" height="100" />
+    </div>
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <form class="row g-3 mt-3 mb-3" asp-action="Index" method="post">
+        <div class="col-12">
+            <img src="~/icon_inspection.png" height="50" />
+        </div>
+        <h2>INSPECTOR TRACKER</h2>
+        <p>Easily track your inspections on their scheduled day.</p>
+        <div class="col-12">
+            <input type="text" class="form-control" name="permit" value="@ViewBag.Permit" placeholder="ENTER PERMIT OR IVR NUMBER" />
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">TRACK NOW</button>
+        </div>
+    </form>
+</div>
+
+<style>
+    .main {
+        max-width: 600px;
+    }
+
+    .logo {
+        text-align: center;
+    }
+
+    form {
+        background-color: #f2f2f2;
+        border-top: 3px solid #14abe1;
+        border-bottom: 3px solid #14abe1;
+        padding: 25px 10px;
+        text-align: center;
+    }
+
+    h2 {
+        font-family: Arial Black;
+        color: #0c2e82;
+    }
+
+    button {
+        padding: 5px 30px !important;
+        background-color: #0c2e82 !important;
+    }
+</style>

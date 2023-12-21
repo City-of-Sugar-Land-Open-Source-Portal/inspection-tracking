@@ -1,0 +1,8 @@
+﻿@model IQueryable<EGInspection>
+
+@foreach (var i in Model ?? Enumerable.Empty<EGInspection>()) 
+{
+    <div>
+        @i.InspectionNumber
+    </div>
+}

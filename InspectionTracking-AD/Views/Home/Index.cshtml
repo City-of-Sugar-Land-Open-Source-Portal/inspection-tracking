@@ -1,0 +1,197 @@
+﻿@{
+    ViewBag.Title = "Inspections";
+}
+
+<div class="mb-3">
+    @(Html.Kendo().Button()
+            .Name("saveButton")
+            .Content("Save Order")
+            .HtmlAttributes(new { type = "button" })
+            .Enable(false)
+            .Events(ev => ev.Click("saveOrder"))
+        )
+</div>
+
+@(
+Html.Kendo().Grid<IxHeader>()
+    .Name("grid")
+    .Columns(cols =>
+    {
+        cols.Template("").Draggable(true).Width(50);
+        cols.Bound(i => i.AddressLine).Title(" ");
+        cols.Command(command =>
+        {
+            command.Custom("En Route").Click("clickEnRoute").Visible("showEnRoute");
+            command.Custom("Done").Click("clickDone").Visible("showDone");
+            command.Custom("Complete").Text(" ").Visible("showComplete").IconClass("k-icon k-i-check");
+        }).Width(70);
+    })
+    .Navigatable()
+    .Reorderable(reorder => reorder.Rows(true).Columns(false))
+    .ClientDetailTemplateId("template")
+    .Events(ev => ev.RowReorder("onRowReorder"))
+    .DataSource(ds => ds
+        .Ajax()
+        .Model(m => m.Id("InspectionId"))
+        .Read(read => read.Action("Inspection_Read", "Home"))
+    )
+)
+
+@(Html.Kendo().Window()
+    .Name("window")
+    .Content(@<text>
+                <form asp-action="EnRoute" method="post">
+                    <div class="mb-3">
+                        <input type="hidden" name="id" value="-1" />
+                        <label for="time" class="form-label">Estimated time (mins)</label>
+                @(Html.Kendo().DropDownList()
+                .Name("time")
+                .HtmlAttributes(new { style = "width: 100%" })
+                .BindTo(new List<string>() {
+                            "15", "30", "45", "60"
+                            })
+            )
+                        </div>
+                        <button type="submit" class="btn btn-primary">Send</button>
+                @(Html.Kendo().Button()
+            .Name("closeEnRoute")
+            .Content("Cancel")
+            .HtmlAttributes(new { type = "button" })
+            .Events(ev => ev.Click("clickCloseEnRoute"))
+        )
+                    </form>
+        </text>)
+    .Title("En route to customer")
+    .Visible(false)
+    .Width(300)
+)
+
+<style>
+    #grid {
+        max-width: 500px;
+    }
+    .k-grid tr.k-alt { background: transparent; }
+</style>
+
+<script id="template" type="text/kendo-tmpl">
+    @(
+            Html.Kendo().Grid<IxDetail>()
+                .Name("grid_#=InspectionId#")
+                .Columns(cols =>
+                {
+                    cols.Bound(d => d.PermitNo).Title("Permit");
+                    cols.Bound(d => d.InspectionNo).Title("Inspection");
+                })
+                .DataSource(ds => ds
+                    .Ajax()
+                    .Read(read => read.Action("Detail_Read", "Home", new { id = "#=InspectionId#" }))
+                )
+                .ToClientTemplate()
+        )
+</script>
+
+<script>
+    function onRowReorder(e) {
+        if (e.oldIndex != e.newIndex) {
+            var button = $("#saveButton").data("kendoButton");
+            button.enable(true);
+        }
+    }
+    function showEnRoute(dataItem) {
+        return dataItem.EnRoute == 1;
+    }
+    function showDone(dataItem) {
+        return dataItem.EnRoute == 2;
+    }
+    function showComplete(dataItem) {
+        return dataItem.IsDone;
+    }
+    function onDataBound(e) {
+        var grid = this;
+        grid.table.find("tr").each(function() {
+            var dataItem = grid.dataItem(this);
+
+            if (dataItem.IsDone) {
+                $(this).find(".k-button").css("display", "none");
+            }
+        });
+    }
+    function saveOrder() {
+        var grid = $("#grid").data("kendoGrid"),
+            dataSource = grid.dataSource,
+            data = dataSource.data();
+
+        for (var i = 0; i < data.length; i++) {
+            var dataItem = data[i];
+            $.ajax({
+                async: false,
+                type: 'POST',
+                url: '@Url.Action("Reorder", "Home")',
+                data: { id: dataItem.InspectionId, idx: i },
+                error: function (ex) {
+                    alert("Cannot re-order inspections at the moment.");
+                }
+            });
+        }
+
+        $.ajax({
+            async: false,
+            type: 'POST',
+            url: '@Url.Action("Route", "Home")',
+            error: function (ex) {
+                alert("Routing cannot be determined.");
+            }
+        });
+
+        grid.dataSource.read();
+        grid.refresh();
+
+        var button = $("#saveButton").data("kendoButton");
+        button.enable(false);
+    }
+    function clickEnRoute(e) {
+        e.preventDefault();
+
+        var grid = $("#grid").data("kendoGrid"),
+            dataItem = this.dataItem($(e.currentTarget).closest("tr")),
+            dialog = $("#window");
+
+        var input = dialog.find("input[name=id]");
+        input.val(dataItem.InspectionId);
+        dialog.data("kendoWindow").open();
+
+        //$.ajax({
+        //    type: 'POST',
+        //    url: '@Url.Action("EnRoute", "Home")',
+        //    data: { id: dataItem.InspectionId },
+        //    success: function () {
+        //        grid.dataSource.read();
+        //        grid.refresh();
+        //    },
+        //    error: function (ex) {
+        //        alert("Routing to this inspection is not working at the moment.");
+        //    }
+        //});
+    }
+    function clickCloseEnRoute(e) {
+        $("#window").data("kendoWindow").close();
+    }
+    function clickDone(e) {
+        e.preventDefault();
+
+        var grid = $("#grid").data("kendoGrid"),
+            dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("Done", "Home")',
+            data: { id: dataItem.InspectionId },
+            success: function () {
+                grid.dataSource.read();
+                grid.refresh();
+            },
+            error: function (ex) {
+                alert("Finishing this inspection is not working at the moment.");
+            }
+        });
+    }
+</script>

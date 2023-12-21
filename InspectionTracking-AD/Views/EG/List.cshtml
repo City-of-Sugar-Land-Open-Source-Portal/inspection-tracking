@@ -1,0 +1,26 @@
+﻿@model IEnumerable<EGInspection>
+@{
+    ViewBag.Title = "EnerGov Inspections";
+}
+
+<form class="row row-cols-lg-auto g-3 mb-3" asp-action="Download" method="post">
+    <input type="hidden" name="user" value="@ViewBag.UserId" />
+    <input type="hidden" name="date" value="@ViewBag.SchedDate" />
+    <button type="submit" class="btn btn-primary">DOWNLOAD</button>
+</form>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    @foreach (var i in Model ?? Enumerable.Empty<EGInspection>())
+    {
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h5>@i.InspectionNumber</h5>
+                </div>
+                <div class="card-body">
+                    @i.AddressLine
+                </div>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,15 @@
+﻿@model Inspector
+
+@if (Model is null)
+{
+    <p>Hello, @User.Identity?.Name!</p>
+}
+else
+{
+    <img src="@Model.PhotoUrl" alt="inspector photo" height="40" />
+    <div class="ms-2" style="font-size: 0.75rem !important">
+        @Model.FirstName<br /> 
+        @Model.LastName
+    </div>
+    <a class="btn btn-secondary ms-2" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
+}
